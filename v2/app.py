@@ -29,6 +29,14 @@ def index():
 	jobs = mongo.db.search_results.find()
 	return render_template('index.html', jobs=jobs)
 
+@app.route('/cpi')
+def cpi_route():
+	cpi_list = []
+	for x in mongo.db.cpi.find():
+		x.pop('_id')
+		cpi_list.append(x)
+	return jsonify(cpi_list)
+
 @app.route('/api')
 def json_api():
 	data = []

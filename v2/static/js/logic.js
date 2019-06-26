@@ -1,7 +1,6 @@
 console.log('logic.js working')
 
 var searchTerm
-
 $('#inputText').attr('placeholder', searchTerm)
 
 
@@ -35,6 +34,7 @@ function mapResults() {
   createPoints(data)
 })
 };
+
 
 
 var streetmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
@@ -117,11 +117,57 @@ function createPoints(data) {
       });
   };
 
-  var zillowArray2 = [];
-  for (var j = 0; j < zillow.length; j++) {
-      zillowArray2.push(L.marker([zillow[j].lat, zillow[j].lng])
-        .bindPopup(zillow[j].medValuePSFt));
-  };
+  var cpi = d3.json('http://127.0.0.1:5000/cpi', function(data){
+  addGeoJson(data);
+});
+
+function addGeoJson(data){
+  var cpi_data = [];
+  var counter = 1;
+  for (var i = 0; i < data.length; i++){
+    cpi_data.push(data[i].cpi);
+  }
+
+
+  L.geoJson(msa_data, {
+    style: function(feature) {
+      return {
+        color: "white",
+        fillColor: 'blue'
+      };
+    },
+    onEachFeature: function(feature, layer){
+      layer.on({
+        mouseover: function(event) {
+          layer = event.target;
+          layer.setStyle({
+            fillOpacity: 0.4
+          });
+          this.openPopup();
+        },
+        mouseout: function(event) {
+          layer = event.target;
+          layer.setStyle({
+            fillOpacity: 0.1
+          });
+          this.closePopup();
+          counter = 1;
+        },
+        click: function(event) {
+          map.fitBounds(event.target.getBounds());
+          layer.unbindPopup();
+          layer.setStyle({
+            fillOpacity: 0.1
+          });
+        }
+      });
+      layer.bindPopup('<h2>'+layer.feature.properties.name+'</h2><h2>CPI: '+
+        cpi_data[counter]+'</h2><hr></h2><h3>Mean Salary: '+'</h3><h3>COL-Adjusted Salary: </h3>', {
+          'offset': L.point(0,-30)});
+      counter += 1;
+    }
+  }).addTo(myMap);
+}
 
   jobPostingsLayer = L.layerGroup(jobPostingsArray);
 
