@@ -35,8 +35,6 @@ function mapResults() {
 })
 };
 
-
-
 var streetmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
   attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
   maxZoom: 18,
@@ -100,6 +98,7 @@ function createPoints(data) {
           zillowArray.push([zillow[i].lat, zillow[i].lng, zillow[i].medValuePSFt])
       }
 
+
       var zillowHeat = L.heatLayer(zillowArray, {
           radius: 10,
           blur: 1,
@@ -116,58 +115,40 @@ function createPoints(data) {
           },
       });
   };
+  
+  var cpiLayer
+  cpiLayer = L.geoJSON(msa_data, {
+    color: 'white',
+    fillColor: 'blue',
+    onEachFeature: onEachFeature,
+  })
 
-  var cpi = d3.json('http://127.0.0.1:5000/cpi', function(data){
-  addGeoJson(data);
-});
 
-function addGeoJson(data){
-  var cpi_data = [];
-  var counter = 1;
-  for (var i = 0; i < data.length; i++){
-    cpi_data.push(data[i].cpi);
+  function onEachFeature(feature, layer){
+
+
+    layer.on({
+      mouseout: function(event) {
+        layer = event.target;
+        layer.setStyle({
+          fillOpacity: 0.1
+        });
+        this.closePopup();
+      },
+      click: function(event) {
+        layer.openPopup();
+        layer.setStyle({
+          fillOpacity: 0.3
+        });
+      }
+    })
+
+    layer.bindPopup('<h3>'+layer.feature.properties.name+'</h3><h4>Cost of Living Factor: x'+
+      Math.round((layer.feature.properties.cpi/251.11)*100)/100+'</h4><h4>Consumer Price Index: '+layer.feature.properties.cpi+'</h4>', {
+        'offset': L.point(0,-30)});
+      
   }
-
-
-  L.geoJson(msa_data, {
-    style: function(feature) {
-      return {
-        color: "white",
-        fillColor: 'blue'
-      };
-    },
-    onEachFeature: function(feature, layer){
-      layer.on({
-        mouseover: function(event) {
-          layer = event.target;
-          layer.setStyle({
-            fillOpacity: 0.4
-          });
-          this.openPopup();
-        },
-        mouseout: function(event) {
-          layer = event.target;
-          layer.setStyle({
-            fillOpacity: 0.1
-          });
-          this.closePopup();
-          counter = 1;
-        },
-        click: function(event) {
-          map.fitBounds(event.target.getBounds());
-          layer.unbindPopup();
-          layer.setStyle({
-            fillOpacity: 0.1
-          });
-        }
-      });
-      layer.bindPopup('<h2>'+layer.feature.properties.name+'</h2><h2>CPI: '+
-        cpi_data[counter]+'</h2><hr></h2><h3>Mean Salary: '+'</h3><h3>COL-Adjusted Salary: </h3>', {
-          'offset': L.point(0,-30)});
-      counter += 1;
-    }
-  }).addTo(myMap);
-}
+  
 
   jobPostingsLayer = L.layerGroup(jobPostingsArray);
 
@@ -175,6 +156,7 @@ function addGeoJson(data){
     "Job Postings": jobPostingsLayer,
     "HeatMap of Job Posts": heat,
     "Relative Median $/sqft (Housing)": zillowHeat,
+    'Consumer Price Index': cpiLayer,
   };
 
 
@@ -199,7 +181,7 @@ var baseMaps = {
   var myMap = L.map("map", {
     center: [37.09, -95.71],
     zoom: 4.5,
-    layers: [streetmap, jobPostingsLayer, heat]
+    layers: [streetmap, jobPostingsLayer, heat, cpiLayer]
   });
 
 

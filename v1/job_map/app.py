@@ -33,6 +33,14 @@ def json_api():
 		data.append(x)
 	return jsonify(data)
 
+@app.route('/cpi')
+def cpi_route():
+	cpi_list = []
+	for x in mongo.db.cpi.find():
+		x.pop('_id')
+		cpi_list.append(x)
+	return jsonify(cpi_list)
+
 @app.route('/filter/<queryString>')
 def filter(queryString):
 	data = []

@@ -25,7 +25,6 @@ function optionChanged(newSample) {
 })
 }
 
-
 var streetmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
   attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
   maxZoom: 18,
@@ -108,13 +107,45 @@ function createPoints(data) {
     });
 };
 
+var cpiLayer
+cpiLayer = L.geoJSON(msa_data, {
+  color: 'white',
+  fillColor: 'blue',
+  onEachFeature: onEachFeature,
+})
+
+function onEachFeature(feature, layer){
+
+
+  layer.on({
+    mouseout: function(event) {
+      layer = event.target;
+      layer.setStyle({
+        fillOpacity: 0.1
+      });
+      this.closePopup();
+    },
+    click: function(event) {
+      layer.openPopup();
+      layer.setStyle({
+        fillOpacity: 0.3
+      });
+    }
+  })
+
+  layer.bindPopup('<h3>'+layer.feature.properties.name+'</h3><h4>Cost of Living Factor: x'+
+    Math.round((layer.feature.properties.cpi/251.11)*100)/100+'</h4><h4>Consumer Price Index: '+layer.feature.properties.cpi+'</h4>', {
+      'offset': L.point(0,-30)});
+    
+}
 
   jobPostingsLayer = new L.layerGroup(jobPostingsArray);
 
   var overlayMaps = {
     "Job Postings": jobPostingsLayer,
     "HeatMap of Job Posts": heat,
-    "Median $/sqft (Housing)": zillowHeat
+    "Relative Median $/sqft (Housing)": zillowHeat,
+    'Consumer Price Index': cpiLayer,
   };
 
 
