@@ -14,15 +14,21 @@
   </head>
 
   <body>
-      <nav class=“navbar”>
-        <p align='center'><h1>Job Posting Visualization With Indeed.com</h1></p>
+    <nav class=“navbar navbar-light bg-dark mb-4”>
+      <p class="header" align='center'><h1>Job Posting Visualization With <img id="indeed" src="/static/indeed-image.png" width="190" height="80" alt="indeed"></h1></p>
 
         <input id="inputText" placeholder='Enter Search Term'>
         <button id="searchJobsbutton" type="button" onclick="enterSearch()">Scrape For New Job Posts</button>
         <button id="mapResultsButton" type="button" onclick="mapResults()">Map Job Search</button>
 
-        <p>All Information is for reference only.</p>
+        <p class="reference" >All Information is for reference only.</p>
       </nav>
+      <hr>
+
+
+          
+  
+
 
       <div id='scrapeText'></div>
       <div id='mapText'></div>
