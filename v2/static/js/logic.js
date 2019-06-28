@@ -1,40 +1,61 @@
-console.log('logic.js working')
+console.log('logic.js read in')
 
-var searchTerm
-$('#inputText').attr('placeholder', searchTerm)
-
-
+//  Craete loader function to show spinner
 function loader() {
   $('#mapText').after('<div class="loader"></div>')
 }
 
+// Function to inialize script when search box is clicked
 function enterSearch() {
-    // Fetch new data each time a new sample is selected
-
-     loader()
-    $ ("#scrapeText").empty()
-    $ ('#mapText').empty()
-
-    var searchurl = 'http://127.0.0.1:5000/search/'+$('#inputText').val() 
-    $(location).attr('href', searchurl)
-    $ ("#scrapeText").append('<h3>Gathering Data for Search Term: "' + $('#inputText').val() + '"</h3>') 
-  };
-
-function mapResults() {
+  
+  //call loader, remove conent from div tags
+  $ ("#scrapeText").empty()
   $ ('#mapText').empty()
-   $ ("#scrapeText").empty()
-  const apiurl = 'http://127.0.0.1:5000/api'
+  $ ('#salaryText').empty()
 
- d3.json(apiurl, function(data) {
-   var searchTerm = data[0].Search_Term
-   $ ("#mapText").append('<h3>Showing Data for Search Term: "' + searchTerm + '"</h3>') 
- })
- 
-  var data = d3.json(apiurl, function(data) {
-  createPoints(data)
-})
+  // use jQuery to pass variable to flask route to initiate 
+  var searchurl = 'http://127.0.0.1:5000/search/'+$('#inputText').val() 
+  $ (location).attr('href', searchurl)
+  
+  //  call loader function
+  loader()
+
+  // add text to show data is being scraped
+  $ ("#scrapeText").append('<h3>Gathering Data for Search Term: "' + $('#inputText').val() + '"</h3>') 
 };
 
+// Function to create map when button is clicked
+function mapResults() {
+
+  // remove content from div tages
+  $ ('#mapText').empty()
+  $ ("#scrapeText").empty()
+  $ ('#salaryText').empty()
+
+  // set url endpoints for json calls
+  // note: change when deployed
+  const apiurl = 'http://127.0.0.1:5000/api'
+  const salaryurl = 'http://127.0.0.1:5000/salary'
+
+  // use d3 to grab value of search term to show on top of map
+  d3.json(apiurl, function(data) {
+   var searchTerm = data[0].Search_Term
+   $ ("#mapText").append('<h3 align="center">Showing Data for Search Term: "' + searchTerm + '"</h3>') 
+  })
+
+ //  use d3 to grab salary data from salary end point
+  d3.json(salaryurl, function(data) {
+    console.log(data.median_salary)
+   $ ("#salaryText").append('<h4 align="center">Median Salary: ' + data.median_salary + '</h4>')
+  })
+ 
+ // call api endpoint and create map by passing data to function
+  var data = d3.json(apiurl, function(data) {
+  createPoints(data)
+  })
+};
+
+// initialize streetmap
 var streetmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
   attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
   maxZoom: 18,
@@ -42,6 +63,7 @@ var streetmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.pn
   accessToken: API_KEY
 });
 
+// initalize darkmap layer
 var darkmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
   attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
   maxZoom: 18,
@@ -49,23 +71,28 @@ var darkmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?
   accessToken: API_KEY
 });
 
+// initialize base map layer
 var baseMaps = {
     "Street Map": streetmap,
-    "Dark Map": darkmap
+    "Dark Mode": darkmap
   };
 
+// initalize map on loading
 var myMap = L.map("map", {
     center: [37.09, -95.71],
     zoom: 4.5,
     layers: [streetmap]
   });
 
+// function to create map using api endpoint
 function createPoints(data) {
 
+  // remove map shown on load
+  // add new map tag using jQuery 
   map.remove()
   $('#mapholder').after('<div id="map"></div>')
   
-
+  // create job posting marker layer
   var jobPostingsArray = [];
   for (var i = 0; i < data.length; i++) {
       var jobPosting = data[i];
@@ -76,6 +103,7 @@ function createPoints(data) {
       }
   };
 
+  //  create jop posting heat layer
   var heatArray = [];
   for (var i = 0; i < data.length; i++) {
       var jobPosting = data[i];
@@ -91,13 +119,13 @@ function createPoints(data) {
       });
   };
 
+  //create zillow house price points and heat layer
   var zillowArray = [];
   for (var i = 0; i < zillow.length; i++) {
 
       if (zillow[i].lat && zillow[i].lng) {
           zillowArray.push([zillow[i].lat, zillow[i].lng, zillow[i].medValuePSFt])
       }
-
 
       var zillowHeat = L.heatLayer(zillowArray, {
           radius: 10,
@@ -116,6 +144,7 @@ function createPoints(data) {
       });
   };
   
+  //create consumer price index layer using geoJSON
   var cpiLayer
   cpiLayer = L.geoJSON(msa_data, {
     color: 'white',
@@ -123,10 +152,9 @@ function createPoints(data) {
     onEachFeature: onEachFeature,
   })
 
-
+  //bind popup and assign DOM event handling to each geoJSON element
   function onEachFeature(feature, layer){
-
-
+    //event listeners
     layer.on({
       mouseout: function(event) {
         layer = event.target;
@@ -142,16 +170,16 @@ function createPoints(data) {
         });
       }
     })
-
+    //create popup
     layer.bindPopup('<h3>'+layer.feature.properties.name+'</h3><h4>Cost of Living Factor: x'+
-      Math.round((layer.feature.properties.cpi/251.11)*100)/100+'</h4><h4>Consumer Price Index: '+layer.feature.properties.cpi+'</h4>', {
+      Math.round((251.11/layer.feature.properties.cpi)*100)/100+'</h4><h4>Consumer Price Index: '+layer.feature.properties.cpi+'</h4>', {
         'offset': L.point(0,-30)});
-      
   }
   
-
+  //create job posting layer from array
   jobPostingsLayer = L.layerGroup(jobPostingsArray);
 
+  //define overlays
   var overlayMaps = {
     "Job Postings": jobPostingsLayer,
     "HeatMap of Job Posts": heat,
@@ -159,35 +187,39 @@ function createPoints(data) {
     'Consumer Price Index': cpiLayer,
   };
 
-
+  // initalize streetmap layer
   var streetmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
-  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-  maxZoom: 18,
-  id: "mapbox.streets",
-  accessToken: API_KEY
-});
-
-var darkmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
-  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-  maxZoom: 18,
-  id: "mapbox.dark",
-  accessToken: API_KEY
-});
-
-var baseMaps = {
-    "Street Map": streetmap,
-    "Dark Map": darkmap
-  };
-  var myMap = L.map("map", {
-    center: [37.09, -95.71],
-    zoom: 4.5,
-    layers: [streetmap, jobPostingsLayer, heat, cpiLayer]
+    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+    maxZoom: 18,
+    id: "mapbox.streets",
+    accessToken: API_KEY
   });
 
+  // initalize darkmap layer
+  var darkmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
+    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+    maxZoom: 18,
+    id: "mapbox.dark",
+    accessToken: API_KEY
+  });
 
+  // initalize basemap layer
+  var baseMaps = {
+      "Street Map": streetmap,
+      "Dark Map": darkmap
+  };
+
+  // initalize darkmap layer
+  var myMap = L.map("map", {
+      center: [37.09, -95.71],
+      zoom: 4.5,
+      layers: [streetmap, jobPostingsLayer, heat]
+  });
+
+  // add control
   L.control.layers(baseMaps, overlayMaps, {
-    collapsed: false
+      collapsed: false
   }).addTo(myMap);
-
-
 }
+
+// end of javascript, hoor

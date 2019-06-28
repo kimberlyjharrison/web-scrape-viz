@@ -2,41 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Job Viz</title>
+  <title>Geographic Job Visualization</title>
 
-  <!-- Leaflet CSS & JS -->
+  <!-- JS, Leaflet, d3 CDNs-->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.3.3/dist/leaflet.js" integrity="sha512-tAGcCfR4Sc5ZP5ZoVz0quoZDYX5aCtEm/eu1KhSLj2c9eFrylXZknQYmxUssFaVJKvvc0dJQixhGjG2yXWiV9Q==" crossorigin=""></script>
   <script src="https://d3js.org/d3.v4.min.js"></script>
   <script src="{{url_for('static', filename='js/leaflet-heat.js')}}"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-
-  <!-- Our CSS -->
   <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/style.css')}}">
 </head>
 
-<body>
+  <body>
+      <nav class=“navbar navbar-light bg-dark mb-4”>
+        <p align='center'><h1>Job Posting Visualization With Indeed.com</h1></p>
+        <select id="selDataset" name='availableJobs' onchange="optionChanged(this.value)"></select>
+        <p>All Information is for reference only.</p>
+      </nav>
 
-    <nav class=“navbar navbar-light bg-dark mb-4”>
-    <p align='center'><h1>Job Posting Visualization With Indeed.com</h1></p>
-      <select id="selDataset" name='availableJobs' onchange="optionChanged(this.value)"></select>
-      <p>All Information is for reference only.</p>
-    </nav>
+      <div id='scrapeText'></div>
+      <div id='mapText'></div>
+      <div id='salaryText'></div>
+      <div id="map"></div>
+      <div id='mapholder'></div>
 
-  
-  <div id="map"></div>
-  <div id='mapholder'></div>
-
-
-  <!-- API key -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-  <script src="{{url_for('static', filename='js/config.js')}}"></script>
-  <script src="{{url_for('static', filename='js/zillow.js')}}"></script>
-  <script src="{{url_for('static', filename='js/msa.js')}}"></script>
-  <script src="{{url_for('static', filename='js/logic.js')}}"></script>
-
-
-</body>
+    <!-- Data, jQuery -->
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+      <script src="{{url_for('static', filename='js/config.js')}}"></script>
+      <script src="{{url_for('static', filename='js/zillow.js')}}"></script>
+      <script src="{{url_for('static', filename='js/msa.js')}}"></script>
+      <script src="{{url_for('static', filename='js/logic.js')}}"></script>
+  </body>
 </html>
 
