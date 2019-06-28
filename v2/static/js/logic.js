@@ -172,7 +172,7 @@ function createPoints(data) {
     })
     //create popup
     layer.bindPopup('<h3>'+layer.feature.properties.name+'</h3><h4>Cost of Living Factor: x'+
-      Math.round((251.11/layer.feature.properties.cpi)*100)/100+'</h4><h4>Consumer Price Index: '+layer.feature.properties.cpi+'</h4>', {
+      Math.round((layer.feature.properties.cpi/251.11)*100)/100+'</h4><h4>Consumer Price Index: '+layer.feature.properties.cpi+'</h4>', {
         'offset': L.point(0,-30)});
   }
   
